@@ -55,15 +55,8 @@ const ChatContainer = ({selecteduser,setSelectedUser}) => {
 
       {/* bottom area .... chat write and send ui */}
 
-     <div className="absolute bottom-0 left-0 right-0 p-3 backdrop-blur-lg">
+     <div className="absolute flex gap-6 bottom-0 left-0 right-0 p-3 backdrop-blur-lg">
   <div className="flex items-center gap-3">
-
-    <div className="flex flex-1 items-center px-4 rounded-full bg-gray-100/10">
-      <input
-        type="text"
-        placeholder="Send a message"
-        className="flex-1 bg-transparent p-3 text-sm text-gray-600 outline-none placeholder:text-gray-400"
-      />
 
       <input
         type="file"
@@ -75,11 +68,18 @@ const ChatContainer = ({selecteduser,setSelectedUser}) => {
       <label htmlFor="image">
         <img
           src={assets.gallery_icon}
-          className="w-5 cursor-pointer"
+          className="w-10 left-0 top-4 cursor-pointer absolute "
           alt=""
         />
       </label>
     </div>
+
+    <div className="flex flex-1 items-center px-4 rounded-full relative bg-gray-100/10">
+      <input
+        type="text"
+        placeholder="Send a message"
+        className="flex-1 bg-transparent p-3 text-sm text-gray-600 outline-none placeholder:text-gray-400"
+      />
 
     <img
       src={assets.send_button}
