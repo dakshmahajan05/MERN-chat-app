@@ -3,6 +3,7 @@ import "dotenv/config"
 import cors from 'cors'
 import http from 'http'
 import { connectDB } from './lib/db.js'
+import userRouter from './routes/user.routes.js'
 
 //creating express app and http server
 const app = express()
@@ -19,6 +20,9 @@ app.use("/api/status",(req,res)=>{
 
 //connect to mongodb
 await connectDB();
+
+//user route setup
+app.use('/api/user',userRouter)
 
 const port =process.env.PORT || 3000
 app.listen(port,()=>{

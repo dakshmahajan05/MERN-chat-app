@@ -1,3 +1,4 @@
+import cloudinary from "../lib/cloudinary.js";
 import { genToken } from "../lib/utils.js";
 import User from "../models/user.model.js";
 import bcrypt from 'bcrypt'
@@ -62,4 +63,31 @@ export const login = async(req,res)=>{
 
 export const checkAuth = (req,res)=>{
     res.json({success:true,message:"user verified",user:req.user})
+}
+
+
+//controller tpo update user profile image
+
+export const updateProfile = async(req,res)=>{
+    try {
+        const {profilePic,bio,fullName} = req.body;
+        const userId = req.user._id;
+
+        let updateduser;
+        if (!updateProfile){
+            await User.findByIdAndUpdate(userId,{bio,fullName},{new:true})
+        }else{
+            const upload = await cloudinary.uploader.upload(profilePic);
+
+            updateduser = await User.findByIdAndUpdate(userId,{profilePic:upload.secure_url,bio,fullName},{new:true})
+
+        }
+
+        res.json({success:true,message:"user profile updated",user:updateduser})
+
+    } catch (error) {
+        console.log(error.message);
+        return res.json({message:error.message,success:false})
+        
+    }
 }
