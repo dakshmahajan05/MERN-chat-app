@@ -16,7 +16,7 @@ const Sidebar = ({selecteduser,setselecteduser}) => {
                 <div className='relative py-2 group'>
                     <img src={assets.menu_icon} className='max-h-5 cursor-pointer' alt="" />
                         <div className='absolute top-full right-0 z-20 w-32 p-5 rounded-md bg-[#57aa53] text-gray-100 hidden group-hover:block' >
-                            <p onClick={()=>navigate('/profile')}>Edit Profile</p>
+                            <p className='cursor-pointer' onClick={()=>navigate('/profile')}>Edit Profile</p>
                             <hr  className='my-2 border-t border-gray-600'/>
                             <p className='cursor-pointer text-sm'>Logout</p>
                         </div>
