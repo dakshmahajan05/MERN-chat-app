@@ -1,5 +1,8 @@
 
 import Message from "../models/message.model.js";
+import {cloudinary} from '../lib/cloudinary.js'
+import { io,userSocketMap } from "../server.js";
+ 
 
 
 
@@ -70,5 +73,42 @@ export const markMesaageSeen = async()=>{
     } catch (error) {
           console.log(error.messages);
         res.json({messages:error.messages,success:false})
+    }
+}
+
+
+//cintroller to send message to selected user 
+
+export const sendmessage = async(req,res)=>{
+    try {
+        const {text,image} = req.body;
+
+        const receiverId = req.params.id;
+        const senderId= req.user._id;
+
+        let imageUrl ;
+        if(image){
+            const uploadResponse= await cloudinary.uploader.upload(image);
+            imageUrl = uploadResponse.secure_url;
+        }
+
+        const newMessage =await  Message.create({
+            senderId,
+            receiverId,
+            text,
+            image:imageUrl
+        })
+        //we havce to send the message to the socket id of receiver,for this , we will use the user-socket map......
+        
+        //emit the new msg to receiver socket 
+        const  receiverSocketId = userSocketMap(receiverId);
+        if(receiverSocketId){
+            io.to(receiverSocketId).emit("new message",newMessage);
+        }
+
+
+        res.json({success:true,newMessage})
+    } catch (error) {
+        
     }
 }
