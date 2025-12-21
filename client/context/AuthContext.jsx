@@ -33,7 +33,49 @@ export const AuthProvider = (children)=>{
         }
     }
 
-    //connect socket funciton to handle socket connection and online users 
+    const login = async(state,credentials)=>{
+        try {
+            const {data} = await axios.post(` /api/auth/${state}`,credentials )
+            if(data.success){
+                setAuthUser(data.userData)
+                connectSocket(data.userData)
+                axios.defaults.headers.common["token"]=data.token;
+                localStorage.setItem("token",data.token)
+
+                toast.success(data.message);
+            }else{
+            toast.error(data.message)
+            }
+        } catch (error) {
+            toast.error(error.message)
+        }
+    }
+
+    const logout = async()=>{
+            localStorage.removeItem("token")
+            setToken(null)
+            setAuthUser(null)
+            setOnlineUsers([])
+            axios.defaults.headers.common["token",null]
+            toast.success("logged out successfully")
+            socket.disconnect()
+    }
+
+
+    const updateProfile = async()=>{
+        try {
+            const {data} = await axios.put("/api/auth/update-profile",body)
+
+            if(data.success){
+                setAuthUser(data.user);
+                toast.success("profile updated successfully")
+            }
+        } catch (error) {
+            toast.error(error.message)
+        }
+    }
+
+    //connect socket funciton to handle socket connection and store online users 
     const connectSocket =(userData)=>{
         if(!userData || socket?.connected) return ;
 
@@ -57,7 +99,7 @@ export const AuthProvider = (children)=>{
         checkAuth()
     },[])
     const value = {
-        axios,authUser,onlineUsers,socket
+        axios,authUser,onlineUsers,socket,login,logout,updateProfile
     }
 
     return (
