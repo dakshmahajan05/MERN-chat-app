@@ -1,22 +1,50 @@
-import React, { useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import assets from '../assets/assets'
+import { AuthContext } from '../../context/AuthContext'
+import { useNavigate } from 'react-router-dom'
 
 const LoginPage = () => {
   const [currstate,setcurrstate]= useState('Sign Up')
-  const [fullname,setfullname]= useState('')
+  const [fullName,setfullName]= useState('')
   const [email,setemail]= useState('')
   const [password,setpassword]= useState('')
   const [bio,setbio]= useState('')
   const [datasubmitted,setdatasubmitted]= useState(false)
 
-  const onsubmithandler=(e)=>{
-      e.preventDefault()
-      if(currstate=='Sign Up' && !datasubmitted){
-        setdatasubmitted(true);
-        return;
-      }
+const {login,authUser} = useContext(AuthContext)
+const navigate = useNavigate();
+
+useEffect(()=>{
+  if(authUser){
+    navigate('/')
   }
-  
+},[authUser]);
+
+const onsubmithandler = async (e) => {
+    e.preventDefault();
+
+    // Pehla step: Agar Sign up hai aur details bhar di, toh bio dikhao
+    if(currstate === "Sign Up" && !datasubmitted){
+        if(!fullName || !email || !password) {
+            return toast.error("Please fill all fields");
+        }
+        setdatasubmitted(true);
+        return; 
+    }
+
+    // Dusra step: Payload taiyar karo
+    const payload = {
+        fullName,
+        email,
+        password,
+        bio: currstate === "Sign Up" ? bio : undefined
+    };
+
+    console.log("Calling API with payload:", payload);
+
+    // API Call
+    await login(currstate === "Sign Up" ? "signup" : "login", payload);
+};
 
 
   return (
@@ -38,7 +66,7 @@ const LoginPage = () => {
       )} */}
 
        {currstate=='Sign Up' && !datasubmitted && (
-        <input onChange={(e)=>{setfullname(e.target.value)}} value={fullname} type="text" className='p-2 border border-gray-500 rounded-md focus:outline-none' placeholder='Full Name' />
+        <input onChange={(e)=>{setfullName(e.target.value)}} value={fullName} type="text" className='p-2 border border-gray-500 rounded-md focus:outline-none' placeholder='Full Name' />
       )}
 
       {!datasubmitted && (

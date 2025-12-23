@@ -1,18 +1,49 @@
-import React, { useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import assets from '../assets/assets'
+import { AuthContext } from '../../context/AuthContext'
 
 const ProfilePage = () => {
-  const [selectedimage,setselectedimage]=useState(null)
+  const {authUser,updateProfile} = useContext(AuthContext)
   const navigate = useNavigate()
-  const [name,setname]= useState("martin jhosnon")
-  const [bio,setbio] = useState("heyyy everyone am using chatty")
 
+  const [selectedimage,setselectedimage]=useState(null)
+  const [name,setname]= useState("")
+  const [bio,setbio] = useState("")
+
+  useEffect(()=>{
+    if(authUser){
+      setname(authUser.fullName || "")
+      setbio(authUser.bio || "")
+    }
+  },[authUser])
 
   const handlesubmmit =async(e)=>{
-      e.preventDefault()
-      navigate('/')
+      e.preventDefault();
+
+      if(!selectedimage){
+
+        const res = await updateProfile({fullName:name,bio})
+          if(res?.success){
+            navigate('/')
+            return ;
+          }
+       }
+      const reader = new FileReader();
+      reader.readAsDataURL(selectedimage);
+      reader.onload= async ()=>{
+        const base64Image = reader.result
+        const res = await updateProfile({profilePic:base64Image,fullName:name,bio})
+        if(res.success){
+          navigate('/')
+        }
+      }
+      reader.onerror=()=>{
+        console.log("image read failed");
+        
+      }
   }
+
   return (
     <div className='min-h-screen bg-cover bg-no-repeat flex items-center justify-center backdrop-blur-2xl'>
 
@@ -29,7 +60,7 @@ const ProfilePage = () => {
           <label htmlFor="avatar" className='flex items-center gap-3 cursor-pointer'>
               <input onChange={(e)=>{setselectedimage(e.target.files[0])}}  type="file" id='avatar' accept='.png,.jpg,.jpeg' hidden  />
 
-             <img src={selectedimage?URL.createObjectURL(selectedimage): assets.avatar_icon} className={`w-12 h-12 ${selectedimage &&  'rounded-full'}`} alt="" />
+             <img src={selectedimage?URL.createObjectURL(selectedimage): authUser?.profilePic || assets.avatar_icon} className={`w-12 h-12 ${authUser?.profilePic && 'rounded-full'} ${selectedimage &&  'rounded-full'}`} alt="" />
              
              upload profile image
           </label>
@@ -43,7 +74,7 @@ const ProfilePage = () => {
 
         {/* right side image */}
 
-        <img src={assets.logo_icon} className='max-w-70 aspect-square rounded-full mx-10 max-sm:mt-10 ' alt="" />
+        <img src={selectedimage?URL.createObjectURL(selectedimage):authUser?.profilePic || assets.logo_icon} className={` ${selectedimage?'sm:w-40':''} ${authUser.profilePic?'sm:w-40':''} max-w-70 aspect-square rounded-full mx-10  max-sm:mt-10  ${selectedimage && 'rounded-full'} ` } alt="" />
       </div>
       
     </div>

@@ -1,9 +1,13 @@
-import React from 'react'
+import React, { useContext, useState } from 'react'
 import assets, { userDummyData } from '../assets/assets'
-import { useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
+import { AuthContext } from '../../context/AuthContext'
 
 const Sidebar = ({selecteduser,setselecteduser}) => {
+
+
     const navigate = useNavigate()
+    const {logout} = useContext(AuthContext)
   return (
 <div
   className={`bg-[#b5f1b1]/10 h-full p-5 rounded-xl overflow-y-scroll text-white ${
@@ -18,7 +22,7 @@ const Sidebar = ({selecteduser,setselecteduser}) => {
                         <div className='absolute top-full right-0 z-20 w-32 p-5 rounded-md bg-[#57aa53] text-gray-100 hidden group-hover:block' >
                             <p className='cursor-pointer' onClick={()=>navigate('/profile')}>Edit Profile</p>
                             <hr  className='my-2 border-t border-gray-600'/>
-                            <p className='cursor-pointer text-sm'>Logout</p>
+                            <p onClick={()=>logout()} className='cursor-pointer text-sm'>Logout</p>
                         </div>
                 </div>
             </div>
@@ -30,10 +34,11 @@ const Sidebar = ({selecteduser,setselecteduser}) => {
 
             </div>
         </div>
-
+            {/* user list */}
         <div className='flex flex-col'>
             {userDummyData.map((user,index)=>(
                 <div
+                key={user._id}
                 onClick={()=>{setselecteduser(user)}}
                 className={`relative flex items-center gap-2 p-2 pl-4 rounded cursor-pointer max:sm:text-sm ${selecteduser?._id===user._id && 'bg-green-300/50 '}`}>
                     <img src={user?.profilePic || assets.avatar_icon} className='w-[35px] aspect-[1/1] rounded-full' alt="" />

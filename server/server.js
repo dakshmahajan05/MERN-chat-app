@@ -52,7 +52,7 @@ io.on("connection",(socket)=>{
 //middleware 
 app.use(express.json({limit:"4mb"}))
 app.use(cors({
-
+origin:"*"
 }))
 app.use("/api/status",(req,res)=>{
     res.send("server working")
@@ -62,7 +62,7 @@ app.use("/api/status",(req,res)=>{
 await connectDB();
 
 //user route setup
-app.use('/api/user',userRouter)
+app.use('/api/auth',userRouter)
 app.use('/api/messages',messageRouter)
 
 const port =process.env.PORT || 3000

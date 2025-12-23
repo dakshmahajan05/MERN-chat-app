@@ -18,13 +18,14 @@ export const signup=async(req,res)=>{
         const salt = await bcrypt.genSalt(10)
         const hashPass = await bcrypt.hash(password,salt)
 
-        const newUser = await new User({
+        const newUser =  new User({
             fullName,email,password:hashPass,bio
         })
+        await newUser.save();
 
         const token = genToken(newUser._id)
 
-        return res.status(200).json({message:"new user register successfull",user:newUser,token:token})
+        return res.status(200).json({message:"new user register successfull",user:newUser,success:true,token:token})
 
     } catch (error) {
         console.log(error);
@@ -50,7 +51,7 @@ export const login = async(req,res)=>{
         }
 
         const token = genToken(user._id)
-        return res.status(200).json({message:"login successfull",success:true,token:token})
+        return res.status(200).json({message:"login successfull",success:true,token:token,user:user})
 
         
     } catch (error) {
@@ -75,16 +76,12 @@ export const updateProfile = async(req,res)=>{
 
         let updateduser;
         if (!profilePic){
-            await User.findByIdAndUpdate(userId,{bio,fullName},{new:true})
+            updateduser=await User.findByIdAndUpdate(userId,{bio,fullName},{new:true})
         }else{
             const upload = await cloudinary.uploader.upload(profilePic);
-
             updateduser = await User.findByIdAndUpdate(userId,{profilePic:upload.secure_url,bio,fullName},{new:true})
-
         }
-
         res.json({success:true,message:"user profile updated",user:updateduser})
-
     } catch (error) {
         console.log(error.message);
         return res.json({message:error.message,success:false})
