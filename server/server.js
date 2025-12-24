@@ -65,9 +65,13 @@ await connectDB();
 app.use('/api/auth',userRouter)
 app.use('/api/messages',messageRouter)
 
-const port =process.env.PORT || 3000
-server.listen(port,()=>{
-    console.log("server is running on port: " + port);
-    
-})
 
+if(process.env.NODE_ENV!=='production'){
+    const port =process.env.PORT || 3000
+    
+    server.listen(port,()=>{
+        console.log("server is running on port: " + port);  
+    })
+}
+//exporting for vercel
+export default server;
