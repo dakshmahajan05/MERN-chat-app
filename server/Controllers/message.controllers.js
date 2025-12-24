@@ -2,6 +2,7 @@
 import Message from "../models/message.model.js";
 import cloudinary from '../lib/cloudinary.js'
 import { io,userSocketMap } from "../server.js";
+import User from "../models/user.model.js";
  
 
 
@@ -10,7 +11,6 @@ import { io,userSocketMap } from "../server.js";
 export const getUserForSidebar = async(req,res)=>{
     try {
         const userId= req.user._id;
-
 
         //filtering users accept the one who is logged in
         const filteredUsers = await User.find({_id :{$ne:userId}}).select("-password")
@@ -101,14 +101,16 @@ export const sendmessage = async(req,res)=>{
         //we havce to send the message to the socket id of receiver,for this , we will use the user-socket map......
         
         //emit the new msg to receiver socket 
-        const  receiverSocketId = userSocketMap(receiverId);
+        const  receiverSocketId = userSocketMap[receiverId];
         if(receiverSocketId){
-            io.to(receiverSocketId).emit("new message",newMessage);
+            io.to(receiverSocketId).emit("newMessage",newMessage);
         }
 
 
         res.json({success:true,newMessage})
     } catch (error) {
+        console.log(error);
+    
         
     }
 }

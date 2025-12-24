@@ -66,7 +66,7 @@ app.use('/api/auth',userRouter)
 app.use('/api/messages',messageRouter)
 
 const port =process.env.PORT || 3000
-app.listen(port,()=>{
+server.listen(port,()=>{
     console.log("server is running on port: " + port);
     
 })
