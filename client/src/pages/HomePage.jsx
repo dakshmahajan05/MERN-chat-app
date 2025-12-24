@@ -1,10 +1,12 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import Sidebar from '../components/Sidebar'
 import ChatContainer from '../components/ChatContainer'
 import RightSidebar from '../components/RightSidebar'
+import { ChatContext } from '../../context/ChatContext'
 
 const HomePage = () => {
-  const [selectedUser, setSelectedUser] = useState(null)
+  const {selectedUser} = useContext(ChatContext)
+
 
   return (
     <div className="w-full h-screen sm:px-[15%] sm:py-[5%] bg-[url('/bgImage.png')] bg-cover bg-center">
@@ -18,17 +20,13 @@ const HomePage = () => {
         `}
       >
         <Sidebar
-          selecteduser={selectedUser}
-          setselecteduser={setSelectedUser}
         />
 
         <ChatContainer
-          selecteduser={selectedUser}
-          setSelectedUser={setSelectedUser}
         />
 
         {/* IMPORTANT: RightSidebar exists ONLY when user exists */}
-        {selectedUser && <RightSidebar selecteduser={selectedUser} />}
+        {selectedUser && <RightSidebar />}
       </div>
     </div>
   )

@@ -61,39 +61,40 @@ export const ChatProvider = ({children})=>{
     }
 
     //function to subscribe to msg for selected user 
-    const subscribeToMessages = async()=>{
-            if(!socket){
-                return 
-            }
+    const subscribeToMessages = () => {
+    if (!socket) return;
 
-            socket.on("newMessage",(newMessage)=>{
-                if(selectedUser && newMessage.senderId === selectedUser._id){
-                    newMessage.seen =true;
-                    setMessages((prev)=>[...prev,newMessage])
-                    axios.put(`/api/messages/mark/${newMessage._id}`);
-                }else{
-                    setUnseenMessages((prev)=>({
-                        ...prev,
-                        [newMessage.senderId] : prev[newMessage.senderId] ? prev
-                        [newMessage.senderId] +1 : 1
-                    }))
-                }
-            })   
-    }
+    // Pehle purana listener hatao taaki duplicate na ho
+    socket.off("newMessage");
 
+    socket.on("newMessage", (newMessage) => {
+    
+        setMessages((prev) => {
+          
+            return [...prev, newMessage];
+        });
+        
+        // Unseen messages ke liye:
+        setUnseenMessages((prev) => ({
+            ...prev,
+            [newMessage.senderId]: (prev[newMessage.senderId] || 0) + 1
+        }));
+    });
+};
 
     const unsubscribeFromMessages = ()=>{
         if(socket) socket.off("newMessage")
 
     }
 
+  
     useEffect(()=>{
         subscribeToMessages()
         return ()=>unsubscribeFromMessages();
     },[socket,selectedUser])
 
     const value = {
-        messages,users,selectedUser,getUsers,subscribeToMessages,setMessages,sendMessage,setSelectedUser,unseenMessages,setUnseenMessages
+        messages,users,selectedUser,getUsers,getMessages,subscribeToMessages,setMessages,sendMessage,setSelectedUser,unseenMessages,setUnseenMessages
     }
 
 return (

@@ -1,29 +1,72 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import assets, { messagesDummyData } from '../assets/assets'
 import { formatMesageTime } from '../lib/utils'
+import { AuthContext } from '../../context/AuthContext'
+import { ChatContext } from '../../context/ChatContext'
+import toast from 'react-hot-toast'
 
 
-const ChatContainer = ({selecteduser,setSelectedUser}) => {
+const ChatContainer = () => {
   const scrollEnd=useRef()
+     const { messages, selectedUser,sendMessage, setSelectedUser, getMessages } = useContext(ChatContext)
 
-  useEffect(()=>{
-    if(scrollEnd.current){
-    scrollEnd.current.scrollIntoView({ behavior: "smooth" })
+     const {authUser,onlineUsers} =useContext(AuthContext)
+
+
+     const [input,setInput] = useState('');
+
+     const handleSendMessage = async(e)=>{
+        e.preventDefault()
+        if(input.trim()==='') return null;
+        await sendMessage({text:input.trim()});
+        setInput("");
+     }
+
+     //handle image send
+    const handleSendImage = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return; // Agar file nahi hai to return
+    if (!file.type.startsWith("image/")) {
+        return toast.error("Select an image file");
     }
-  },[messagesDummyData])
 
-  return selecteduser?(
+    const reader = new FileReader(); // Fixed typo here
+    reader.onloadend = async () => {
+        const base64Image = reader.result;
+        await sendMessage({ image: base64Image });
+        e.target.value = ''; // Input reset
+    };
+    reader.readAsDataURL(file);
+};
+      useEffect(()=>{
+        if(selectedUser){
+          getMessages(selectedUser._id)
+        }
+      },[selectedUser])
+
+  useEffect(() => {
+    if (scrollEnd.current && messages) {
+        setTimeout(() => {
+            scrollEnd.current.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+    }
+}, [messages]);
+  return selectedUser?(
   <div className='h-full overflow-scroll relative backdrop-blur-lg'>
 
     {/* header */}
 
 
       <div className='flex  items-center gap-3 py-3 mx-4 border-b border-stone-500'>
-      <img src={assets.profile_martin} className='w-8 rounded-full' alt="" />
-      <p className='flex flex-1 text-lg text-gray-600 items-center gap-2'>
-        Martin Jhonson
-        <span className='w-2 h-2 rounded-full bg-green-500'></span>
-      </p>
+      <img src={selectedUser.profilePic || assets.avatar_icon} className='w-8 rounded-full' alt="" />
+     <p className='flex flex-1 text-lg text-gray-600 items-center gap-2'>
+  {selectedUser.fullName}
+  
+  {/* Logic: Agar user online hai tabhi span dikhao */}
+  {onlineUsers.includes(selectedUser._id) && (
+    <span className='w-2 h-2 rounded-full bg-green-500'></span>
+  )}
+</p>
 
       <img src={assets.arrow_icon} className='md:hidden max-w-7' 
       onClick={()=>{setSelectedUser(null)}} alt="" />
@@ -34,17 +77,17 @@ const ChatContainer = ({selecteduser,setSelectedUser}) => {
     {/* chat area */}
 
     <div className='flex flex-col h-[calc(100%-120px)] overflow-y-scroll p-3 pb-6 '>
-      {messagesDummyData.map((msg,index)=>(
-        <div className={`flex items-end gap-2 justify-end ${msg.senderId!=='680f50e4f10f3cd28382ecf9' ? `flex-row-reverse`:''}`} key={index}>
+      {messages.map((msg,index)=>(
+        <div className={`flex items-end gap-2 justify-end ${msg.senderId!==authUser._id ? `flex-row-reverse`:''}`} key={index}>
 
           {msg.image?(
             <img src={msg.image} className='max-w-[230px] border border-gray-700 rounded-lg overflow-hidden mb-8' alt="" />
           ):(
-            <p className={`p-2 max-w-[200px] md:text-sm font-light rounded-lg mb-8 break-all bg-green-400 text-white ${msg.senderId=='680f50e4f10f3cd28382ecf9'?'rounded-br-none':'rounded-bl-none'}`}>{msg.text}</p>
+            <p className={`p-2 max-w-[200px] md:text-sm font-light rounded-lg mb-8 break-all bg-green-400 text-white ${msg.senderId==authUser._id?'rounded-br-none':'rounded-bl-none'}`}>{msg.text}</p>
           )}
             {/* profile image and time  */}
           <div className='text-center text-xs '>
-            <img src={msg.senderId==='680f50e4f10f3cd28382ecf9'?assets.avatar_icon : assets.profile_martin } className='w-7 rounded-full ' alt="" />
+            <img src={msg.senderId===authUser._id?authUser?.profilePic || assets.avatar_icon : selectedUser?.profilePic || assets.avatar_icon} className='w-7 rounded-full ' alt="" />
             <p  className='text-gray-500'>{formatMesageTime(msg.createdAt)}</p>
 
           </div>
@@ -60,7 +103,7 @@ const ChatContainer = ({selecteduser,setSelectedUser}) => {
 
       <input
         type="file"
-  
+        onChange={handleSendImage}
         id="image"
         accept="image/png, image/jpeg, image/svg+xml"
         hidden
@@ -79,10 +122,14 @@ const ChatContainer = ({selecteduser,setSelectedUser}) => {
         type="text"
         placeholder="Send a message"
         className="flex-1 bg-transparent p-3 text-sm text-gray-600 outline-none placeholder:text-gray-400"
+        value={input}
+           onChange={(e)=>setInput(e.target.value)}
+        onKeyDown={(e)=>e.key==='Enter'?handleSendMessage(e):null}
       />
 
     <img
       src={assets.send_button}
+      onClick={handleSendMessage}
       className="w-15 backdrop-blur-lg absolute right-0 cursor-pointer"
       alt=""
     />

@@ -1,16 +1,27 @@
-import React from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import assets, { imagesDummyData } from '../assets/assets'
+import { ChatContext } from '../../context/ChatContext'
+import { AuthContext } from '../../context/AuthContext'
 
-const RightSidebar = ({selecteduser}) => {
-  return selecteduser &&(
-    <div className={`bg-green-200 text-gray-600 w-full relative overflow-y-scroll ${selecteduser? "max-md:hidden":""} `}>
+const RightSidebar = () => {
+  const {selectedUser,messages} = useContext(ChatContext)
+  const {logout,onlineUsers} = useContext(AuthContext)
+  const [msgImages,setmsgImages] = useState([])
+
+  useEffect(()=>{
+    setmsgImages(
+      messages.filter(msg=>msg.image).map(msg=>msg.image)
+    )
+  },[messages])
+  return selectedUser &&(
+    <div className={`bg-green-200 text-gray-600 w-full relative overflow-y-scroll ${selectedUser? "max-md:hidden":""} `}>
         <div className='pt-16 flex flex-col items-center gap-2 text-xs font-light mx-auto'>
-          <img className='w-20 aspect-[1/1] rounded-full' src={selecteduser?.profilePic || assets.avatar_icon}  alt="" />
+          <img className='w-20 aspect-[1/1] rounded-full' src={selectedUser?.profilePic || assets.avatar_icon}  alt="" />
           <h1 className='px-10 text-xl font-medium mx-auto flex items-center gap-2'>
-            <p className='w-2 h-2 rounded-full bg-green-500'></p>
-            {selecteduser.fullName}
+            {onlineUsers.includes(selectedUser._id) && <p className='w-2 h-2 rounded-full bg-green-500'></p> }
+            {selectedUser.fullName}
             </h1>
-            <p className='px-10 mx-auto'>{selecteduser.bio}</p>
+            <p className='px-10 mx-auto'>{selectedUser.bio}</p>
         </div>
 
         <hr className='border-gray-300 my-4 ' />
@@ -18,7 +29,7 @@ const RightSidebar = ({selecteduser}) => {
         <div className='px-5 text-xs'>
           <p>Media</p>
           <div className='mt-2 max-h-[200px] overflow-y-scroll  grid-cols-2 grid gap-4 opacity-80'>
-              {imagesDummyData.map((url,index)=>(
+              {msgImages.map((url,index)=>(
                 <div key={index}
                 className='cursor-pointer rounded'
                 onClick={()=>window.open(url)}>
@@ -30,7 +41,7 @@ const RightSidebar = ({selecteduser}) => {
 
         {/* button  */}
 
-        <button className='absolute bottom-5 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-green-300 to-green-600 text-white border-none text-sm font-light py-2 px-20 rounded-full
+        <button onClick={()=>logout()} className='mr-2 absolute bottom-5 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-green-300 to-green-600 text-white border-none text-sm font-light py-2 px-20 rounded-full
          cursor-pointer'>Logout</button>
     </div>
   )
